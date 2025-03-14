@@ -1,103 +1,258 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [data, setData] = useState(JSON.stringify(dummyData, null, 2));
+  const [showGraph, setShowGraph] = useState(false);
+  const [summary, setSummary] = useState([] as { title: string, summary: Summary[], total: Summary }[]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  function handleVisualize() {
+    try {
+      const parsedData = JSON.parse(data);
+      if (parsedData.length >= 2) {
+        setSummary(transform(parsedData));
+        setShowGraph(true);
+      } else {
+        alert('Please provide at least 2 months of data');
+      }
+    } catch (error) {
+      alert('Invalid JSON data');
+    }
+  }
+
+  return (
+    <div className="flex-1 flex flex-col items-start justify-items-center min-h-screen p-8 pb-20 gap-4 sm:p-20">
+      {!showGraph ? (
+        <>
+          <button
+            onClick={handleVisualize}
+            className="px-4 py-2 rounded-md border-2 border-foreground text-foreground transition-colors duration-300 hover:bg-foreground hover:text-background"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+            See graph
+          </button>
+          <span className="text-foreground text-lg">
+            Please fill the input below and click this button to see graph
+          </span>
+          <textarea
+            value={data}
+            onChange={(e) => setData(e.target.value)}
+            className={`w-full p-4 border-2 border-foreground rounded-md text-xl min-h-[calc(100vh-16rem)]`}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        </>
+      )
+        : (
+          <div className="w-full p-4 border-2 border-foreground rounded-md">
+            {summary.map(({ title, summary, total }, index) => (
+              <div key={index}>
+                <div className="flex justify-between mb-4">
+                  <p>
+                    {title}
+                  </p>
+                </div>
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b-2 border-foreground">
+                      <th className="text-left p-2">Bank</th>
+                      <th className="text-left p-2">İsim</th>
+                      <th className="text-right p-2 text-blue-600">Adet</th>
+                      <th className="text-right p-2 text-green-600">Son Birim Fiyat</th>
+                      <th className="text-right p-2 text-green-600">Son Toplam Tutar</th>
+                      <th className="text-right p-2 text-blue-600">Güncel Birim Fiyat</th>
+                      <th className="text-right p-2 text-blue-600">Güncel Toplam Tutar</th>
+                      <th className="text-right p-2">Kar/Zarar</th>
+                      <th className="text-right p-2">%</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {summary.map((item) => {
+                      return (
+                        <StockRow
+                          key={`${item.bank}-${item.name}`}
+                          summary={item}
+                        />
+                      );
+                    })}
+
+                    <tr className="border-t-2 border-foreground font-bold">
+                      <td className="p-2" colSpan={2}>TOPLAM</td>
+                      <td className="text-right p-2"></td>
+                      <td className="text-right p-2"></td>
+                      <td className="text-right p-2">{total.lastTotal.toFixed(2)}</td>
+                      <td className="text-right p-2"></td>
+                      <td className="text-right p-2">{total.currentTotal.toFixed(2)}</td>
+                      <td className={`text-right p-2 ${total.differenceTotal > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        {`${total.differenceTotal.toFixed(2)}`}
+                      </td>
+                      <td className={`text-right p-2 ${total.differencePercent > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        {`${total.differencePercent.toFixed(2)}%`}
+                      </td>
+                    </tr>
+
+                  </tbody>
+                </table>
+              </div>
+            ))}
+            <button
+              onClick={() => {
+                setShowGraph(false);
+              }}
+              className="mt-4 px-4 py-2 rounded-md border-2 border-foreground text-foreground"
+            >
+              Back to Input
+            </button>
+          </div>
+        )
+      }
+    </div >
+  );
+}
+
+type Summary = {
+  bank: string;
+  name: string;
+  amount: number;
+  lastUnitPrice: number;
+  lastTotal: number;
+  currentUnitPrice: number;
+  currentTotal: number;
+  differenceTotal: number;
+  differencePercent: number;
+}
+
+function transform(data: MonthData[]) {
+  return data.reduce((acc, month, index, array) => {
+    if (index === 0) return acc;
+    const previousMonth = array[index - 1];
+    const title = `${month.date} Õzeti`;
+    const summary = month.data.map(item => {
+      const previousItem = previousMonth.data.find(i => i.name === item.name && i.bank === item.bank);
+      if (!previousItem) {
+        return {
+          bank: item.bank,
+          name: item.name,
+          amount: item.amount,
+          lastUnitPrice: item.unitPrice,
+          lastTotal: item.amount * item.unitPrice,
+          currentUnitPrice: item.unitPrice,
+          currentTotal: item.amount * item.unitPrice,
+          differenceTotal: 0,
+          differencePercent: 0
+        }
+      }
+      const lastTotal = item.amount * previousItem.unitPrice;
+      const currentTotal = item.amount * item.unitPrice;
+      const difference = Math.round(currentTotal - lastTotal);
+      const change = Math.round(100 * difference / lastTotal);
+      return {
+        bank: item.bank,
+        name: item.name,
+        amount: item.amount,
+        lastUnitPrice: previousItem?.unitPrice ?? item.unitPrice,
+        lastTotal: lastTotal,
+        currentUnitPrice: item.unitPrice,
+        currentTotal: currentTotal,
+        differenceTotal: difference,
+        differencePercent: change
+      }
+    })
+    const summaryLastTotal = summary.reduce((acc, item) => acc + item.lastTotal, 0)
+    const summaryCurrentTotal = summary.reduce((acc, item) => acc + item.currentTotal, 0)
+    const total = {
+      bank: 'TOPLAM',
+      name: '',
+      amount: 0,
+      lastUnitPrice: 0,
+      lastTotal: summaryLastTotal,
+      currentUnitPrice: 0,
+      currentTotal: summaryCurrentTotal,
+      differenceTotal: Math.round(summaryCurrentTotal - summaryLastTotal),
+      differencePercent: Math.round((summaryCurrentTotal - summaryLastTotal) / summaryLastTotal * 100)
+    }
+    acc.push({
+      title: title,
+      summary: summary,
+      total: total
+    });
+
+    return acc
+  }, [] as { title: string, summary: Summary[], total: Summary }[]);
+}
+
+const dummyData = [
+  {
+    "date": "2025-01-03",
+    "data": [
+      { "bank": "bank 1", "name": "stock share 1", "amount": 100, "unitPrice": 20.60 },
+      { "bank": "bank 1", "name": "stock share 2", "amount": 50, "unitPrice": 70.00 },
+      { "bank": "bank 1", "name": "stock share 3", "amount": 1000, "unitPrice": 5.50 },
+      { "bank": "bank 2", "name": "stock share 4", "amount": 24, "unitPrice": 44.75 },
+      { "bank": "bank 2", "name": "stock share 5", "amount": 5, "unitPrice": 234.66 },
+      { "bank": "bank 2", "name": "stock share 6", "amount": 1000, "unitPrice": 4.33 },
+    ]
+  },
+  {
+    "date": "2025-02-04",
+    "data": [
+      { "bank": "bank 1", "name": "stock share 1", "amount": 100, "unitPrice": 21.60 },
+      { "bank": "bank 1", "name": "stock share 2", "amount": 60, "unitPrice": 68.90 },
+      { "bank": "bank 1", "name": "stock share 3", "amount": 1100, "unitPrice": 5.34 },
+      { "bank": "bank 2", "name": "stock share 4", "amount": 30, "unitPrice": 45.75 },
+      { "bank": "bank 2", "name": "stock share 5", "amount": 10, "unitPrice": 224.66 },
+      { "bank": "bank 2", "name": "stock share 6", "amount": 1050, "unitPrice": 4.89 },
+      { "bank": "bank 2", "name": "stock share 7", "amount": 200, "unitPrice": 14.10 },
+    ]
+  },
+  {
+    "date": "2025-03-02",
+    "data": [
+      { "bank": "bank 1", "name": "stock share 1", "amount": 120, "unitPrice": 21.40 },
+      { "bank": "bank 1", "name": "stock share 2", "amount": 65, "unitPrice": 71.20 },
+      { "bank": "bank 1", "name": "stock share 3", "amount": 1100, "unitPrice": 5.71 },
+      { "bank": "bank 2", "name": "stock share 4", "amount": 50, "unitPrice": 49.12 },
+      { "bank": "bank 2", "name": "stock share 5", "amount": 10, "unitPrice": 224.66 },
+      { "bank": "bank 2", "name": "stock share 6", "amount": 1150, "unitPrice": 4.50 },
+      { "bank": "bank 2", "name": "stock share 7", "amount": 200, "unitPrice": 14.20 },
+      { "bank": "bank 1", "name": "fond 1", "amount": 2000, "unitPrice": 1.12 },
+    ]
+  }
+]
+
+// Add these interfaces at the top of the file, after the imports
+interface StockItem {
+  bank: string;
+  name: string;
+  amount: number;
+  unitPrice: number;
+}
+
+interface MonthData {
+  date: string;
+  data: StockItem[];
+}
+
+interface StockRowProps {
+  summary: Summary;
+}
+
+export function StockRow({ summary }: StockRowProps) {
+
+  return (
+    <tr className="border-b border-foreground/20">
+      <td className="p-2">{summary.bank}</td>
+      <td className="p-2">{summary.name}</td>
+      <td className="text-right p-2 text-blue-600">{summary.amount}</td>
+      <td className="text-right p-2">{summary.lastUnitPrice.toFixed(2)}</td>
+      <td className="text-right p-2">{summary.lastTotal.toFixed(2)}</td>
+      <td className="text-right p-2">{summary.currentUnitPrice.toFixed(2)}</td>
+      <td className="text-right p-2">{summary.currentTotal.toFixed(2)}</td>
+      <td className={`text-right p-2 ${summary.differenceTotal > 0 ? 'text-green-500' : 'text-red-500'}`}>
+        {summary.differenceTotal}
+      </td>
+      <td className={`text-right p-2 ${summary.differencePercent > 0 ? 'text-green-500' : 'text-red-500'}`}>
+        {`${summary.differencePercent.toFixed(2)}%`}
+      </td>
+
+    </tr>
   );
 }
