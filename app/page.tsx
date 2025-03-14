@@ -6,6 +6,7 @@ export default function Home() {
   const [data, setData] = useState(JSON.stringify(dummyData, null, 2));
   const [showGraph, setShowGraph] = useState(false);
   const [summary, setSummary] = useState([] as { title: string, summary: Summary[], total: Summary }[]);
+  const [page, setPage] = useState(0)
 
   function handleVisualize() {
     try {
@@ -43,64 +44,88 @@ export default function Home() {
       )
         : (
           <div className="w-full p-4 border-2 border-foreground rounded-md">
-            {summary.map(({ title, summary, total }, index) => (
-              <div key={index}>
-                <div className="flex justify-between mb-4">
-                  <p>
-                    {title}
-                  </p>
+            {summary.map(({ title, summary, total }, index) => {
+              if (index !== page) return null;
+              return (
+                <div key={index}>
+                  <div className="flex justify-between mb-4">
+                    <p>
+                      {title}
+                    </p>
+                  </div>
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="border-b-2 border-foreground">
+                        <th className="text-left p-2">Bank</th>
+                        <th className="text-left p-2">İsim</th>
+                        <th className="text-right p-2 text-blue-600">Adet</th>
+                        <th className="text-right p-2 text-green-600">Son Birim Fiyat</th>
+                        <th className="text-right p-2 text-green-600">Son Toplam Tutar</th>
+                        <th className="text-right p-2 text-blue-600">Güncel Birim Fiyat</th>
+                        <th className="text-right p-2 text-blue-600">Güncel Toplam Tutar</th>
+                        <th className="text-right p-2">Kar/Zarar</th>
+                        <th className="text-right p-2">%</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {summary.map((item) => {
+                        return (
+                          <StockRow
+                            key={`${item.bank}-${item.name}`}
+                            summary={item}
+                          />
+                        );
+                      })}
+
+                      <tr className="border-t-2 border-foreground font-bold">
+                        <td className="p-2" colSpan={2}>TOPLAM</td>
+                        <td className="text-right p-2"></td>
+                        <td className="text-right p-2"></td>
+                        <td className="text-right p-2">{total.lastTotal.toFixed(2)}</td>
+                        <td className="text-right p-2"></td>
+                        <td className="text-right p-2">{total.currentTotal.toFixed(2)}</td>
+                        <td className={`text-right p-2 ${total.differenceTotal > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                          {`${total.differenceTotal.toFixed(2)}`}
+                        </td>
+                        <td className={`text-right p-2 ${total.differencePercent > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                          {`${total.differencePercent.toFixed(2)}%`}
+                        </td>
+                      </tr>
+
+                    </tbody>
+                  </table>
                 </div>
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b-2 border-foreground">
-                      <th className="text-left p-2">Bank</th>
-                      <th className="text-left p-2">İsim</th>
-                      <th className="text-right p-2 text-blue-600">Adet</th>
-                      <th className="text-right p-2 text-green-600">Son Birim Fiyat</th>
-                      <th className="text-right p-2 text-green-600">Son Toplam Tutar</th>
-                      <th className="text-right p-2 text-blue-600">Güncel Birim Fiyat</th>
-                      <th className="text-right p-2 text-blue-600">Güncel Toplam Tutar</th>
-                      <th className="text-right p-2">Kar/Zarar</th>
-                      <th className="text-right p-2">%</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {summary.map((item) => {
-                      return (
-                        <StockRow
-                          key={`${item.bank}-${item.name}`}
-                          summary={item}
-                        />
-                      );
-                    })}
-
-                    <tr className="border-t-2 border-foreground font-bold">
-                      <td className="p-2" colSpan={2}>TOPLAM</td>
-                      <td className="text-right p-2"></td>
-                      <td className="text-right p-2"></td>
-                      <td className="text-right p-2">{total.lastTotal.toFixed(2)}</td>
-                      <td className="text-right p-2"></td>
-                      <td className="text-right p-2">{total.currentTotal.toFixed(2)}</td>
-                      <td className={`text-right p-2 ${total.differenceTotal > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        {`${total.differenceTotal.toFixed(2)}`}
-                      </td>
-                      <td className={`text-right p-2 ${total.differencePercent > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        {`${total.differencePercent.toFixed(2)}%`}
-                      </td>
-                    </tr>
-
-                  </tbody>
-                </table>
+              )
+            }
+            )}
+            <div className="flex justify-between mt-4">
+              <button
+                onClick={() => {
+                  setShowGraph(false);
+                }}
+                className="mt-4 px-4 py-2 rounded-md border-2 border-foreground text-foreground"
+              >
+                Back to Input
+              </button>
+              <div className="flex  gap-4">
+                {page > 0 && (
+                  <button
+                    onClick={() => { setPage(page - 1) }}
+                    className="mt-4 px-4 py-2 rounded-md border-2 border-foreground text-foreground"
+                  >
+                    Previous
+                  </button>
+                )}
+                {page < summary.length - 1 && (
+                  <button
+                    onClick={() => { setPage(page + 1) }}
+                    className="mt-4 px-4 py-2 rounded-md border-2 border-foreground text-foreground"
+                  >
+                    Next
+                  </button>
+                )}
               </div>
-            ))}
-            <button
-              onClick={() => {
-                setShowGraph(false);
-              }}
-              className="mt-4 px-4 py-2 rounded-md border-2 border-foreground text-foreground"
-            >
-              Back to Input
-            </button>
+            </div>
           </div>
         )
       }
