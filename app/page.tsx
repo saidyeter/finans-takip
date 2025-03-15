@@ -5,7 +5,7 @@ import { useState } from "react";
 export default function Home() {
   const [data, setData] = useState(JSON.stringify(dummyData, null, 2));
   const [showGraph, setShowGraph] = useState(false);
-  const [summary, setSummary] = useState([] as { title: string, summary: Summary[], total: Summary }[]);
+  const [summaryList, setSummary] = useState([] as { title: string, summary: Summary[], total: Summary }[]);
   const [page, setPage] = useState(0)
 
   function handleVisualize() {
@@ -23,17 +23,17 @@ export default function Home() {
   }
 
   return (
-    <div className="flex-1 flex flex-col items-start justify-items-center min-h-screen p-8 pb-20 gap-4 sm:p-20">
+    <div className="flex-1 flex flex-col items-start justify-items-center min-h-screen sm:p-8 text-foreground">
       {!showGraph ? (
         <>
           <button
             onClick={handleVisualize}
             className="px-4 py-2 rounded-md border-2 border-foreground text-foreground transition-colors duration-300 hover:bg-foreground hover:text-background"
           >
-            See graph
+            Grafiği Göster
           </button>
           <span className="text-foreground text-lg">
-            Please fill the input below and click this button to see graph
+            Aşağıdaki formatta girdiyi doldurun ve grafiği görmek için tıklayın
           </span>
           <textarea
             value={data}
@@ -43,57 +43,76 @@ export default function Home() {
         </>
       )
         : (
-          <div className="w-full p-4 border-2 border-foreground rounded-md">
-            {summary.map(({ title, summary, total }, index) => {
+          <div className="w-full">
+            {summaryList.map(({ title, summary, total }, index) => {
               if (index !== page) return null;
               return (
-                <div key={index}>
-                  <div className="flex justify-between mb-4">
-                    <p>
-                      {title}
-                    </p>
+                <div key={index} className="flex flex-col w-full  mx-auto  ">
+                  <div className="flex justify-between mb-4 p-2">
+                    <h2 className="text-xl font-semibold">{title}</h2>
+                    <div className="flex  gap-4">
+                      {page > 0 && (
+                        <button
+                          onClick={() => { setPage(page - 1) }}
+                          className="mt-4 px-4 py-2 rounded-md border-2 border-foreground text-foreground"
+                        >
+                          {summaryList[page - 1].title}
+
+                        </button>
+                      )}
+                      {page < summaryList.length - 1 && (
+                        <button
+                          onClick={() => { setPage(page + 1) }}
+                          className="mt-4 px-4 py-2 rounded-md border-2 border-foreground text-foreground"
+                        >
+                          {summaryList[page + 1].title}
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="border-b-2 border-foreground">
-                        <th className="text-left p-2">Bank</th>
-                        <th className="text-left p-2">İsim</th>
-                        <th className="text-right p-2 text-blue-600">Adet</th>
-                        <th className="text-right p-2 text-green-600">Son Birim Fiyat</th>
-                        <th className="text-right p-2 text-green-600">Son Toplam Tutar</th>
-                        <th className="text-right p-2 text-blue-600">Güncel Birim Fiyat</th>
-                        <th className="text-right p-2 text-blue-600">Güncel Toplam Tutar</th>
-                        <th className="text-right p-2">Kar/Zarar</th>
-                        <th className="text-right p-2">%</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {summary.map((item) => {
-                        return (
-                          <StockRow
-                            key={`${item.bank}-${item.name}`}
-                            summary={item}
-                          />
-                        );
-                      })}
+                  <div className="overflow-x-auto ">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="bg-background">
+                          <th className=" border border-gray-200 p-2 min-w-[100px] h-9 font-semibold hover:bg-gray-200">Bank</th>
+                          <th className=" border border-gray-200 p-2 min-w-[100px] h-9 font-semibold hover:bg-gray-200">İsim</th>
+                          <th className=" border border-gray-200 p-2 min-w-[100px] h-9 font-semibold hover:bg-gray-200 text-blue-600">Adet</th>
+                          <th className=" border border-gray-200 p-2 min-w-[100px] h-9 font-semibold hover:bg-gray-200 text-green-600">Son Birim Fiyat</th>
+                          <th className=" border border-gray-200 p-2 min-w-[100px] h-9 font-semibold hover:bg-gray-200 text-green-600">Son Toplam Tutar</th>
+                          <th className=" border border-gray-200 p-2 min-w-[100px] h-9 font-semibold hover:bg-gray-200 text-blue-600">Güncel Birim Fiyat</th>
+                          <th className=" border border-gray-200 p-2 min-w-[100px] h-9 font-semibold hover:bg-gray-200 text-blue-600">Güncel Toplam Tutar</th>
+                          <th className=" border border-gray-200 p-2 min-w-[100px] h-9 font-semibold hover:bg-gray-200">Kar/Zarar</th>
+                          <th className=" border border-gray-200 p-2 min-w-[100px] h-9 font-semibold hover:bg-gray-200">%</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {summary.map((item) => {
+                          return (
+                            <StockRow
+                              key={`${item.bank}-${item.name}`}
+                              summary={item}
+                            />
+                          );
+                        })}
 
-                      <tr className="border-t-2 border-foreground font-bold">
-                        <td className="p-2" colSpan={2}>TOPLAM</td>
-                        <td className="text-right p-2"></td>
-                        <td className="text-right p-2"></td>
-                        <td className="text-right p-2">{total.lastTotal.toFixed(2)}</td>
-                        <td className="text-right p-2"></td>
-                        <td className="text-right p-2">{total.currentTotal.toFixed(2)}</td>
-                        <td className={`text-right p-2 ${total.differenceTotal > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                          {`${total.differenceTotal.toFixed(2)}`}
-                        </td>
-                        <td className={`text-right p-2 ${total.differencePercent > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                          {`${total.differencePercent.toFixed(2)}%`}
-                        </td>
-                      </tr>
+                        <tr className="border-t-2 border-foreground font-bold">
+                          <td className="p-2" colSpan={2}>TOPLAM</td>
+                          <td className=" border border-gray-200 p-2 min-w-[100px] h-9"></td>
+                          <td className=" border border-gray-200 p-2 min-w-[100px] h-9"></td>
+                          <td className=" border border-gray-200 p-2 min-w-[100px] h-9">{total.lastTotal.toFixed(2)}</td>
+                          <td className=" border border-gray-200 p-2 min-w-[100px] h-9"></td>
+                          <td className=" border border-gray-200 p-2 min-w-[100px] h-9">{total.currentTotal.toFixed(2)}</td>
+                          <td className={` border border-gray-200 p-2 min-w-[100px] h-9 ${total.differenceTotal > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                            {`${total.differenceTotal.toFixed(2)}`}
+                          </td>
+                          <td className={` border border-gray-200 p-2 min-w-[100px] h-9 ${total.differencePercent > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                            {`${total.differencePercent.toFixed(2)}%`}
+                          </td>
+                        </tr>
 
-                    </tbody>
-                  </table>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )
             }
@@ -105,26 +124,9 @@ export default function Home() {
                 }}
                 className="mt-4 px-4 py-2 rounded-md border-2 border-foreground text-foreground"
               >
-                Back to Input
+                Girdiyi Düzenle
               </button>
-              <div className="flex  gap-4">
-                {page > 0 && (
-                  <button
-                    onClick={() => { setPage(page - 1) }}
-                    className="mt-4 px-4 py-2 rounded-md border-2 border-foreground text-foreground"
-                  >
-                    Previous
-                  </button>
-                )}
-                {page < summary.length - 1 && (
-                  <button
-                    onClick={() => { setPage(page + 1) }}
-                    className="mt-4 px-4 py-2 rounded-md border-2 border-foreground text-foreground"
-                  >
-                    Next
-                  </button>
-                )}
-              </div>
+
             </div>
           </div>
         )
@@ -264,17 +266,17 @@ export function StockRow({ summary }: StockRowProps) {
 
   return (
     <tr className="border-b border-foreground/20">
-      <td className="p-2">{summary.bank}</td>
-      <td className="p-2">{summary.name}</td>
-      <td className="text-right p-2 text-blue-600">{summary.amount}</td>
-      <td className="text-right p-2">{summary.lastUnitPrice.toFixed(2)}</td>
-      <td className="text-right p-2">{summary.lastTotal.toFixed(2)}</td>
-      <td className="text-right p-2">{summary.currentUnitPrice.toFixed(2)}</td>
-      <td className="text-right p-2">{summary.currentTotal.toFixed(2)}</td>
-      <td className={`text-right p-2 ${summary.differenceTotal > 0 ? 'text-green-500' : 'text-red-500'}`}>
+      <td className=" border border-gray-200 p-2 min-w-[100px] h-9 hover:bg-gray-50">{summary.bank}</td>
+      <td className=" border border-gray-200 p-2 min-w-[100px] h-9 hover:bg-gray-50">{summary.name}</td>
+      <td className=" border border-gray-200 p-2 min-w-[100px] h-9 hover:bg-gray-50 text-blue-600">{summary.amount}</td>
+      <td className=" border border-gray-200 p-2 min-w-[100px] h-9 hover:bg-gray-50">{summary.lastUnitPrice.toFixed(2)}</td>
+      <td className=" border border-gray-200 p-2 min-w-[100px] h-9 hover:bg-gray-50">{summary.lastTotal.toFixed(2)}</td>
+      <td className=" border border-gray-200 p-2 min-w-[100px] h-9 hover:bg-gray-50">{summary.currentUnitPrice.toFixed(2)}</td>
+      <td className=" border border-gray-200 p-2 min-w-[100px] h-9 hover:bg-gray-50">{summary.currentTotal.toFixed(2)}</td>
+      <td className={` border border-gray-200 p-2 min-w-[100px] h-9 hover:bg-gray-50 ${summary.differenceTotal > 0 ? 'text-green-500' : 'text-red-500'}`}>
         {summary.differenceTotal}
       </td>
-      <td className={`text-right p-2 ${summary.differencePercent > 0 ? 'text-green-500' : 'text-red-500'}`}>
+      <td className={` border border-gray-200 p-2 min-w-[100px] h-9 hover:bg-gray-50 ${summary.differencePercent > 0 ? 'text-green-500' : 'text-red-500'}`}>
         {`${summary.differencePercent.toFixed(2)}%`}
       </td>
 
